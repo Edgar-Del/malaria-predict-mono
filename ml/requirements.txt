@@ -1,0 +1,40 @@
+# ML Dependencies - Sistema de Previsão de Malária - Bié
+
+# Machine Learning
+scikit-learn==1.3.2
+pandas==2.1.4
+numpy==1.25.2
+joblib==1.3.2
+
+# Processamento de Dados
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Visualização
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.17.0
+
+# Feature Engineering
+feature-engine==1.6.2
+category-encoders==2.6.3
+
+# Model Evaluation
+mlxtend==0.22.0
+imbalanced-learn==0.11.0
+
+# Hyperparameter Tuning
+optuna==3.4.0
+hyperopt==0.2.7
+
+# Data Validation
+great-expectations==0.18.5
+pandera==0.17.2
+
+# MLOps
+mlflow==2.8.1
+dvc==3.15.0
+
+# Utilitários
+tqdm==4.66.1
+click==8.1.7

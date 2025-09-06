@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "malaria-backend"
+version = "1.0.0"
+description = "Backend API para Sistema de Previsão de Risco de Malária - Bié"
+authors = [
+    {name = "Edgar Tchissingui", email = "edgar@malaria-bie.ao"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "psycopg2-binary>=2.9.9",
+    "sqlalchemy>=2.0.23",
+    "alembic>=1.13.1",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "loguru>=0.7.2",
+    "schedule>=1.2.0",
+    "Jinja2>=3.1.2",
+    "email-validator>=2.1.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "httpx>=0.25.2",
+    "black>=23.11.0",
+    "flake8>=6.1.0",
+    "isort>=5.12.0"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
