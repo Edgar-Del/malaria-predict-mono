@@ -1,0 +1,65 @@
+# Multi-stage build para otimização
+FROM node:18-alpine as base
+
+# Instalar dependências do sistema
+RUN apk add --no-cache \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S malaria && \
+    adduser -S malaria -u 1001
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar package files
+COPY src/dashboards/package*.json ./
+
+# Stage de dependências
+FROM base as dependencies
+
+# Instalar dependências
+RUN npm ci --only=production && npm cache clean --force
+
+# Stage de build
+FROM base as builder
+
+# Instalar todas as dependências (incluindo dev)
+RUN npm ci
+
+# Copiar código fonte
+COPY src/dashboards/ .
+
+# Build da aplicação
+RUN npm run build
+
+# Stage de produção
+FROM base as production
+
+# Copiar dependências e build
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
+# Definir permissões
+RUN chown -R malaria:malaria /app
+
+# Mudar para usuário não-root
+USER malaria
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Expor porta
+EXPOSE 3000
+
+# Variáveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Comando padrão
+CMD ["npm", "start"]
+
