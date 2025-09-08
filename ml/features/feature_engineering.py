@@ -101,16 +101,17 @@ class FeatureEngineer:
         Cria features temporais (sazonalidade, tendências).
         
         Args:
-            df: DataFrame com coluna 'ano_semana'
+            df: DataFrame com colunas 'ano' e 'semana'
             
         Returns:
             DataFrame com features temporais adicionadas
         """
         df_temporal = df.copy()
         
-        # Extrair ano e semana
-        df_temporal['ano'] = df_temporal['ano_semana'].str.split('-').str[0].astype(int)
-        df_temporal['semana'] = df_temporal['ano_semana'].str.split('-').str[1].astype(int)
+        # Verificar se as colunas ano e semana existem
+        if 'ano' not in df_temporal.columns or 'semana' not in df_temporal.columns:
+            logger.warning("Colunas 'ano' e 'semana' não encontradas. Pulando features temporais.")
+            return df_temporal
         
         # Features cíclicas para sazonalidade
         df_temporal['semana_sin'] = np.sin(2 * np.pi * df_temporal['semana'] / 52)
@@ -125,8 +126,14 @@ class FeatureEngineer:
         # Estação do ano (aproximada)
         df_temporal['estacao'] = ((df_temporal['semana'] - 1) // 13) + 1
         
+        # Features cíclicas para mês
+        if 'mes' in df_temporal.columns:
+            df_temporal['mes_sin'] = np.sin(2 * np.pi * df_temporal['mes'] / 12)
+            df_temporal['mes_cos'] = np.cos(2 * np.pi * df_temporal['mes'] / 12)
+            self.feature_columns.extend(['mes_sin', 'mes_cos'])
+        
         self.feature_columns.extend([
-            'ano', 'semana', 'semana_sin', 'semana_cos', 'tendencia', 'estacao'
+            'semana_sin', 'semana_cos', 'tendencia', 'estacao'
         ])
         
         logger.info("Features temporais criadas")

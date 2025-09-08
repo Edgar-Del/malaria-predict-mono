@@ -1,6 +1,8 @@
 # Sistema de Previsão de Risco de Malária - Bié
 
-Sistema profissional de previsão de risco de malária para a província do Bié, Angola, desenvolvido com arquitetura de microserviços e machine learning.
+Sistema profissional de previsão de risco de malária para a província do Bié, Angola, desenvolvido com arquitetura moderna e machine learning.
+
+**Versão 2.0** - Atualizado com as tecnologias mais recentes e otimizações de performance.
 
 ## 🏗️ Arquitetura do Projeto
 
@@ -30,8 +32,8 @@ Sistema distribuído que fornece previsões semanais de risco de malária (baixo
 ### Pré-requisitos
 
 - Docker e Docker Compose
-- Python 3.9+ (para desenvolvimento local)
-- Node.js 18+ (para o frontend)
+- Python 3.12+ (para desenvolvimento local)
+- Node.js 20+ (para o frontend)
 
 ### Execução com Docker (Recomendado)
 
@@ -82,9 +84,10 @@ make status
 API REST desenvolvida com FastAPI para gerenciar previsões e dados.
 
 **Tecnologias:**
-- FastAPI + Python 3.9+
-- PostgreSQL + SQLAlchemy
-- Pydantic para validação
+- FastAPI 0.115+ + Python 3.12+
+- PostgreSQL 16 + SQLAlchemy 2.0+
+- Pydantic 2.10+ para validação
+- APScheduler para agendamento
 - Sistema de alertas por email
 
 **Funcionalidades:**
@@ -97,10 +100,11 @@ API REST desenvolvida com FastAPI para gerenciar previsões e dados.
 Dashboard web responsivo para visualização de previsões.
 
 **Tecnologias:**
-- React 18 + Next.js 14
-- TypeScript + Tailwind CSS
+- React 18.3+ + Next.js 15+
+- TypeScript 5.7+ + Tailwind CSS 3.4+
 - Leaflet para mapas
 - Recharts para gráficos
+- Prettier + ESLint para qualidade
 
 **Funcionalidades:**
 - Mapa interativo dos municípios
@@ -112,10 +116,11 @@ Dashboard web responsivo para visualização de previsões.
 Módulo de machine learning para treinamento e predição.
 
 **Tecnologias:**
-- scikit-learn + pandas + numpy
-- MLflow para experimentos
+- scikit-learn 1.5+ + pandas 2.2+ + numpy 2.1+
+- MLflow 2.14+ para experimentos
 - Feature engineering avançado
 - Validação cruzada estratificada
+- Optuna para otimização de hiperparâmetros
 
 **Funcionalidades:**
 - Engenharia de features temporais
@@ -211,7 +216,7 @@ make test-coverage
 ```
 
 ### Ferramentas de Qualidade
-- **Python**: Black, Flake8, MyPy
+- **Python**: Black, Ruff, MyPy
 - **TypeScript**: ESLint, Prettier
 - **Docker**: Multi-stage builds otimizados
 - **CI/CD**: GitHub Actions (configurável)
@@ -349,6 +354,6 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 
 **Status**: ✅ **MVP Profissional Completo** - Pronto para Demonstração e Validação
 
-**Última Atualização**: Janeiro 2024  
-**Versão**: 1.0.0  
+**Última Atualização**: Janeiro 2025  
+**Versão**: 2.0.0  
 **Licença**: MIT

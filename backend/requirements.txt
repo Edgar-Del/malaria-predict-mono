@@ -1,35 +1,31 @@
 # Backend Dependencies - Sistema de Previsão de Malária - Bié
+# Versão simplificada para build mais rápido
 
 # API e Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-python-multipart==0.0.6
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+pydantic>=2.0.0
+python-multipart>=0.0.5
 
 # Banco de Dados
-psycopg2-binary==2.9.9
-sqlalchemy==2.0.23
-alembic==1.13.1
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+alembic>=1.10.0
 
 # E-mail e Alertas
-smtplib
-email-validator==2.1.0
-Jinja2==3.1.2
+email-validator>=2.0.0
+Jinja2>=3.1.0
 
 # Agendamento
-schedule==1.2.0
+apscheduler>=3.10.0
 
 # Utilitários
-python-dotenv==1.0.0
-requests==2.31.0
-loguru==0.7.2
+python-dotenv>=1.0.0
+requests>=2.30.0
+loguru>=0.7.0
 
-# Testes
-pytest==7.4.3
-pytest-asyncio==0.21.1
-httpx==0.25.2
-
-# Desenvolvimento
-black==23.11.0
-flake8==6.1.0
-isort==5.12.0
+# Machine Learning (essenciais)
+scikit-learn>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+joblib>=1.3.0

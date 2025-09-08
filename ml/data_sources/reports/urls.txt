@@ -1,0 +1,20 @@
+# URLs de relatórios públicos (PDF/XLSX) para extração semiautomática
+# Observação: formatos variam; ajuste as heurísticas em parse_reports.py se necessário
+
+# WHO – World Malaria Report (Anexos em XLSX)
+https://cdn.who.int/media/docs/default-source/malaria/world-malaria-report-2023/wmr2023-annexes.xlsx
+# Versão 2024 (caso disponível/publicada)
+https://cdn.who.int/media/docs/default-source/malaria/world-malaria-report-2024/wmr2024-annexes.xlsx
+
+# WHO – World Malaria Report (PDF principal – pode conter tabelas simples)
+https://cdn.who.int/media/docs/default-source/malaria/world-malaria-report-2023/wmr-2023.pdf
+
+# Exemplo de relatório nacional (substitua por links oficiais públicos quando disponíveis)
+# (Caso existam relatórios do Ministério da Saúde de Angola/DHIS2 publicados)
+# https://example.gov.ao/relatorios/malaria_bie_2022.pdf
+# https://example.gov.ao/relatorios/malaria_bie_2023.pdf
+
+# Se possuir outros relatórios públicos (UNICEF/MICS, INE/IBEP, etc.), adicione aqui:
+# https://mics.unicef.org/surveys (procure Angola e adicione o XLSX/PDF específico)
+
+
