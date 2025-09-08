@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+A#!/usr/bin/env python3
 """
 Extrai tabelas relevantes de relatórios (PDF/Excel) em data/raw/reports e
 gera data/raw/casos_bie.csv no formato esperado pelo pipeline.
