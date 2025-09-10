@@ -1,304 +1,127 @@
-# ML - Sistema de Previsão de Malária - Bié
+# 🤖 Módulo ML - Sistema de Previsão de Malária
 
-Módulo de Machine Learning para previsão de risco de malária utilizando scikit-learn e MLflow.
-
-## 🏗️ Arquitetura
+## 📁 Estrutura do Projeto
 
 ```
 ml/
-├── data/                  # Processamento de dados
-│   ├── preprocess.py     # Pré-processamento
-│   ├── visualize.py      # Visualizações
-│   └── quality_check.py  # Verificação de qualidade
-├── features/             # Engenharia de features
-│   └── engineer.py       # Criação de features
-├── models/               # Modelos de ML
-│   ├── trainer.py        # Treinamento
-│   ├── predictor.py      # Predição
-│   └── evaluator.py      # Avaliação
-├── training/             # Scripts de treinamento
-│   ├── train_model.py    # Treinamento principal
-│   ├── hyperparameter_tuning.py # Otimização
-│   └── validate_model.py # Validação
-├── serving/              # Servir modelos
-│   ├── predict.py        # Predições
-│   ├── deploy.py         # Deploy
-│   └── monitor.py        # Monitoramento
-└── requirements.txt      # Dependências Python
+├── core/                           # Código principal do ML
+│   ├── models/                     # Modelos treinados
+│   │   ├── malaria_risk_model_expanded.pkl
+│   │   ├── label_encoder_risco_expanded.pkl
+│   │   └── label_encoder_municipio_expanded.pkl
+│   ├── features/                   # Engenharia de features
+│   │   └── feature_engineering.py
+│   ├── training/                   # Scripts de treinamento
+│   │   └── train_expanded_model.py
+│   ├── data/                       # Fontes de dados
+│   │   └── data_sources/
+│   │       ├── fetch_climate_open_meteo.py
+│   │       └── reports/
+│   │           ├── download_reports.py
+│   │           ├── parse_reports.py
+│   │           └── urls.txt
+│   └── requirements.txt            # Dependências
+├── scripts/                        # Scripts utilitários
+│   ├── compare_models.py           # Comparação de modelos
+│   ├── demo_model_usage.py         # Demonstração interativa
+│   ├── generate_large_dataset.py   # Geração de dataset expandido
+│   ├── test_real_model.py          # Testes do modelo
+│   └── ...
+├── docs/                           # Documentação
+│   ├── EXPANDED_DATASET_REPORT.md  # Relatório do dataset expandido
+│   ├── README_REAL_MODEL.md        # Guia do modelo real
+│   └── REAL_MODEL_REPORT.md        # Relatório do modelo real
+├── data/                           # Dados processados (link simbólico)
+└── README.md                       # Este arquivo
 ```
 
-## 🚀 Instalação e Execução
+## 🚀 Uso Rápido
 
-### Desenvolvimento Local
-
+### 1. Treinar Modelo
 ```bash
-# Instalar dependências
-make install
-
-# Executar pipeline completo
-make pipeline
-
-# Treinar modelo
-make train
-
-# Executar testes
-make test
+cd core/training
+python train_expanded_model.py
 ```
 
-### Docker
-
+### 2. Comparar Modelos
 ```bash
-# Construir imagem
-docker build -t malaria-ml .
-
-# Executar container
-docker run -p 5000:5000 malaria-ml
+cd scripts
+python compare_models.py
 ```
 
-## 🤖 Modelos de ML
-
-### Algoritmos Implementados
-
-- **Random Forest**: Classificador principal
-- **Gradient Boosting**: Alternativa robusta
-- **SVM**: Suporte para dados lineares
-- **Logistic Regression**: Baseline simples
-
-### Pipeline de ML
-
-1. **Pré-processamento**: Limpeza e validação
-2. **Feature Engineering**: Criação de atributos
-3. **Treinamento**: Otimização de hiperparâmetros
-4. **Validação**: Cross-validation estratificada
-5. **Deploy**: Servir modelo em produção
-
-## 📊 Engenharia de Features
-
-### Features Temporais
-- **Lags**: Valores anteriores (1-4 semanas)
-- **Médias Móveis**: Janelas de 2 e 4 semanas
-- **Sazonalidade**: Componentes cíclicos
-
-### Features Climáticas
-- **Precipitação**: Chuva acumulada e média
-- **Temperatura**: Média, mínima, máxima
-- **Umidade**: Relativa e absoluta
-- **Índices**: Conforto térmico, amplitude
-
-### Features Epidemiológicas
-- **Taxa de Crescimento**: Variação de casos
-- **Aceleração**: Segunda derivada
-- **Percentis**: Classificação histórica
-
-## 🔧 Configuração
-
-### Variáveis de Ambiente
-
+### 3. Demonstração Interativa
 ```bash
-# Banco de Dados
-DATABASE_URL=postgresql://malaria_user:malaria_pass@localhost:5432/malaria_bie
-
-# Modelo
-MODEL_PATH=models/malaria_model.joblib
-RANDOM_STATE=42
-
-# MLflow
-MLFLOW_TRACKING_URI=http://localhost:5000
-MLFLOW_EXPERIMENT_NAME=malaria_prediction
+cd scripts
+python demo_model_usage.py
 ```
 
-### Configuração MLflow
-
-```python
-# mlflow_config.py
-import mlflow
-
-mlflow.set_tracking_uri("http://localhost:5000")
-mlflow.set_experiment("malaria_prediction")
-```
-
-## 🧪 Experimentos
-
-### Executar Experimento
-
+### 4. Gerar Dataset Expandido
 ```bash
-# Experimento completo
-make experiment
-
-# Hiperparâmetros
-make hyperparameter-tuning
-
-# Validação
-make model-validation
+cd scripts
+python generate_large_dataset.py
 ```
 
-### MLflow UI
-
+### 5. Testar Modelo
 ```bash
-# Iniciar MLflow UI
-make mlflow-ui
-
-# Acessar: http://localhost:5000
+cd scripts
+python test_real_model.py
 ```
 
-## 📈 Avaliação de Modelos
+## 📊 Modelo Atual
 
-### Métricas
+- **Dataset**: 18,720 registros (2010-2024)
+- **Municípios**: 24 municípios do Bié
+- **Acurácia**: 97.9%
+- **Features**: 27 variáveis avançadas
+- **Algoritmo**: Random Forest Classifier
 
-- **Accuracy**: Precisão geral
-- **Precision**: Precisão por classe
-- **Recall**: Sensibilidade por classe
-- **F1-Score**: Média harmônica
-- **Confusion Matrix**: Matriz de confusão
+## 🔍 Features Mais Importantes
 
-### Validação
-
-- **Cross-Validation**: 5-fold estratificado
-- **Time Series Split**: Validação temporal
-- **Holdout**: Teste final
-- **Bootstrap**: Estimativa de confiança
-
-## 🔧 Desenvolvimento
-
-### Estrutura de Código
-
-```python
-# Exemplo de treinamento
-from models.trainer import ModelTrainer
-from data.preprocess import DataPreprocessor
-
-# Pré-processar dados
-preprocessor = DataPreprocessor()
-X, y = preprocessor.fit_transform(data)
-
-# Treinar modelo
-trainer = ModelTrainer()
-model = trainer.train(X, y)
-
-# Avaliar
-metrics = trainer.evaluate(model, X_test, y_test)
-```
-
-### Feature Engineering
-
-```python
-# Exemplo de feature engineering
-from features.engineer import FeatureEngineer
-
-engineer = FeatureEngineer()
-
-# Criar features temporais
-df_lags = engineer.create_lag_features(df, 'casos', [1, 2, 3, 4])
-
-# Criar features sazonais
-df_seasonal = engineer.create_seasonal_features(df_lags)
-
-# Criar features climáticas
-df_climate = engineer.create_climate_features(df_seasonal)
-```
-
-## 📊 Visualizações
-
-### Gráficos de Análise
-
-- **Distribuição**: Histogramas de features
-- **Correlação**: Matriz de correlação
-- **Importância**: Features mais importantes
-- **Performance**: Curvas de aprendizado
-
-### Métricas de Modelo
-
-- **ROC Curves**: Curvas ROC por classe
-- **Precision-Recall**: Curvas PR
-- **Confusion Matrix**: Matriz de confusão
-- **Feature Importance**: Importância das features
-
-## 🚀 Deploy
-
-### Modelo em Produção
-
-```bash
-# Deploy do modelo
-make deploy-model
-
-# Monitorar performance
-make monitor-model
-```
-
-### Servir Predições
-
-```python
-# Exemplo de predição
-from serving.predict import ModelPredictor
-
-predictor = ModelPredictor()
-prediction = predictor.predict(municipio="Kuito", semana="2024-01")
-```
-
-## 📊 Monitoramento
-
-### Métricas de Produção
-
-- **Drift Detection**: Detecção de drift
-- **Performance**: Acurácia em tempo real
-- **Data Quality**: Qualidade dos dados
-- **Model Health**: Saúde do modelo
-
-### Alertas
-
-- **Accuracy Drop**: Queda de performance
-- **Data Drift**: Mudança nos dados
-- **Model Staleness**: Modelo desatualizado
-- **System Errors**: Erros do sistema
-
-## 🔧 Desenvolvimento
-
-### Estrutura de Testes
-
-```python
-# Exemplo de teste
-import pytest
-from models.trainer import ModelTrainer
-
-def test_model_training():
-    trainer = ModelTrainer()
-    X, y = create_sample_data()
-    model = trainer.train(X, y)
-    assert model is not None
-    assert trainer.evaluate(model, X, y)['accuracy'] > 0.8
-```
-
-### Padrões de Código
-
-- **Python**: PEP 8, Black, Flake8
-- **ML**: Scikit-learn best practices
-- **Testing**: Pytest com fixtures
-- **Documentation**: Docstrings completas
+1. **casos_vs_municipio_mean** (27.8%) - Comparação relativa
+2. **casos_temp_interaction** (21.1%) - Interação clima-casos
+3. **casos_ma3** (9.7%) - Média móvel de 3 semanas
+4. **casos_ma5** (7.2%) - Média móvel de 5 semanas
+5. **casos_lag1** (4.5%) - Casos da semana anterior
 
 ## 📈 Performance
 
-### Otimizações
+| Métrica | Valor |
+|---------|-------|
+| **Acurácia** | 97.9% |
+| **CV Score** | 95.0% |
+| **Precision (Alto)** | 96% |
+| **Recall (Alto)** | 99% |
+| **F1-Score (Alto)** | 97% |
 
-- **Feature Selection**: Seleção de features
-- **Hyperparameter Tuning**: Otimização de parâmetros
-- **Cross-Validation**: Validação robusta
-- **Ensemble Methods**: Métodos ensemble
+## 🎯 Classes de Risco
 
-### Escalabilidade
+- **Alto**: 1,092 registros (5.8%)
+- **Médio**: 6,311 registros (33.7%)
+- **Baixo**: 11,317 registros (60.5%)
 
-- **Batch Processing**: Processamento em lote
-- **Parallel Training**: Treinamento paralelo
-- **Model Caching**: Cache de modelos
-- **Incremental Learning**: Aprendizado incremental
+## 📚 Documentação
 
-## 🤝 Contribuição
+- [Relatório do Dataset Expandido](docs/EXPANDED_DATASET_REPORT.md)
+- [Guia do Modelo Real](docs/README_REAL_MODEL.md)
+- [Relatório do Modelo Real](docs/REAL_MODEL_REPORT.md)
 
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+## 🔧 Instalação
 
-## 📄 Licença
+```bash
+# Instalar dependências
+pip install -r core/requirements.txt
 
-Este projeto está sob a licença MIT.
+# Ativar ambiente virtual (recomendado)
+source .venv-ml/bin/activate
+```
+
+## 🚀 Próximos Passos
+
+1. **Integração**: Conectar com dashboard
+2. **Alertas**: Sistema de notificações automáticas
+3. **Retreinamento**: Atualização automática semanal
+4. **Expansão**: Adicionar mais features (socioeconômicas)
+
+---
+*Última atualização: 2025-09-08*
+*Versão: 2.0 (Dataset Expandido)*

@@ -12,10 +12,15 @@ import numpy as np
 from fastapi import APIRouter, HTTPException, Depends, Query, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-from src.model.malaria_model import MalariaModel
-from src.features.feature_engineering import FeatureEngineer
-from src.ingest.database_manager import DatabaseManager
-from src.api.models import PredictionRequest, PredictionResponse, TrainingResponse, MetricsResponse
+from infrastructure.database_manager import DatabaseManager
+from .models import (
+    PrevisaoRequest, PrevisaoResponse, PrevisoesSemanaResponse,
+    TreinamentoRequest, TreinamentoResponse, MetricasModeloResponse,
+    MunicipioResponse, SerieSemanalResponse, AlertaResponse,
+    EstatisticasMunicipioResponse, RelatorioSemanalResponse,
+    ConfiguracaoAlertaRequest, ConfiguracaoAlertaResponse,
+    SuccessResponse, ErrorResponse, DadosHistoricoRequest
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +44,7 @@ async def root():
     return {
         "message": "Sistema de Previsão de Risco de Malária (Bié)",
         "version": "1.0.0",
-        "status": "ativo",
+        "status": "activo",
         "timestamp": datetime.now().isoformat()
     }
 

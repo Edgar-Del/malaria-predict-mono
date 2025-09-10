@@ -45,6 +45,14 @@ def get_db_manager():
 # Incluir rotas
 app.include_router(router, dependencies=[Depends(get_db_manager)])
 
+# Health check simples (não depende do banco)
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "timestamp": datetime.now().isoformat()
+    }
+
 # Eventos da aplicação
 @app.on_event("startup")
 async def startup_event():

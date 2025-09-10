@@ -3,6 +3,7 @@ Rotas da API para o Sistema de Previsão de Risco de Malária.
 """
 
 import logging
+import pandas as pd
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
@@ -14,11 +15,10 @@ from .models import (
     MunicipioResponse, SerieSemanalResponse, AlertaResponse,
     EstatisticasMunicipioResponse, RelatorioSemanalResponse,
     ConfiguracaoAlertaRequest, ConfiguracaoAlertaResponse,
-    SuccessResponse, ErrorResponse
+    SuccessResponse, ErrorResponse, DadosHistoricoRequest
 )
 from infrastructure.database_manager import DatabaseManager
-from ml.models.trainer import ModelTrainer
-from ml.models.predictor import ModelPredictor
+from ml_integration import ml_integration
 from infrastructure.email_alerts import EmailAlertsManager
 
 logger = logging.getLogger(__name__)
@@ -32,13 +32,9 @@ def get_db_manager() -> DatabaseManager:
     from .main import get_db_manager
     return get_db_manager()
 
-def get_model_trainer() -> ModelTrainer:
-    """Dependência para obter o treinador de modelo."""
-    return ModelTrainer()
-
-def get_model_predictor() -> ModelPredictor:
-    """Dependência para obter o preditor de modelo."""
-    return ModelPredictor()
+def get_ml_integration():
+    """Dependência para obter a integração ML."""
+    return ml_integration
 
 def get_email_alerts() -> EmailAlertsManager:
     """Dependência para obter o gerenciador de alertas."""
@@ -50,12 +46,19 @@ def get_email_alerts() -> EmailAlertsManager:
 async def predict_risk(
     request: PrevisaoRequest,
     db: DatabaseManager = Depends(get_db_manager),
-    predictor: ModelPredictor = Depends(get_model_predictor)
+    ml_integration = Depends(get_ml_integration)
 ):
     """
     Obtém previsão de risco de malária para um município específico.
     """
     try:
+        # Verificar se modelo está disponível
+        if not ml_integration.is_model_loaded():
+            raise HTTPException(
+                status_code=400, 
+                detail="Modelo não está carregado. Execute o treinamento primeiro."
+            )
+        
         # Verificar se o município existe
         municipios = db.get_municipios()
         municipio_encontrado = None
@@ -70,26 +73,50 @@ async def predict_risk(
                 detail=f"Município '{request.municipio}' não encontrado"
             )
         
-        # Obter previsão
-        previsao = await predictor.predict_single(
-            municipio=request.municipio,
-            ano_semana=request.ano_semana,
-            db_manager=db
-        )
+        # Obter dados históricos do município
+        series_df = db.get_series_semanais(municipio_nome=request.municipio)
         
-        if not previsao:
+        if series_df.empty:
             raise HTTPException(
-                status_code=404,
-                detail=f"Previsão não encontrada para {request.municipio} na semana {request.ano_semana}"
+                status_code=404, 
+                detail=f"Nenhum dado encontrado para o município: {request.municipio}"
             )
         
-        return previsao
+        # Fazer predição usando integração ML
+        prediction_result = ml_integration.predict_risk(series_df)
+        
+        # Salvar previsão no banco
+        previsao_data = {
+            'municipio_id': municipio_encontrado['id'],
+            'ano_semana_prevista': request.ano_semana,
+            'classe_risco': prediction_result['classe_risco'],
+            'score_risco': prediction_result['score_risco'],
+            'probabilidade_baixo': prediction_result['probabilidade_baixo'],
+            'probabilidade_medio': prediction_result['probabilidade_medio'],
+            'probabilidade_alto': prediction_result['probabilidade_alto'],
+            'modelo_versao': prediction_result['model_version'],
+            'modelo_tipo': 'RandomForest'
+        }
+        
+        db.insert_previsoes(pd.DataFrame([previsao_data]))
+        
+        return PrevisaoResponse(
+            municipio=request.municipio,
+            ano_semana=request.ano_semana,
+            classe_risco=prediction_result['classe_risco'],
+            score_risco=prediction_result['score_risco'],
+            probabilidade_baixo=prediction_result['probabilidade_baixo'],
+            probabilidade_medio=prediction_result['probabilidade_medio'],
+            probabilidade_alto=prediction_result['probabilidade_alto'],
+            modelo_versao=prediction_result['model_version'],
+            created_at=datetime.now()
+        )
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Erro na previsão: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno na previsão")
+        raise HTTPException(status_code=500, detail=f"Erro na previsão: {str(e)}")
 
 @router.get("/previsoes/semana/{ano_semana}", response_model=PrevisoesSemanaResponse)
 async def get_previsoes_semana(
@@ -163,36 +190,27 @@ async def get_previsoes_semana(
 async def train_model(
     request: TreinamentoRequest,
     db: DatabaseManager = Depends(get_db_manager),
-    trainer: ModelTrainer = Depends(get_model_trainer)
+    ml_integration = Depends(get_ml_integration)
 ):
     """
     Treina o modelo de previsão de risco de malária.
     """
     try:
-        # Verificar se já existe modelo e se deve retreinar
-        metricas_latest = db.get_metricas_latest()
-        if metricas_latest and not request.retreinar:
-            raise HTTPException(
-                status_code=400,
-                detail="Modelo já existe. Use 'retreinar=true' para forçar retreinamento."
+        # Verificar se modelo já está carregado
+        if ml_integration.is_model_loaded():
+            return TreinamentoResponse(
+                status="sucesso",
+                message="Modelo já está treinado e carregado",
+                modelo_versao="expanded_v1.0",
+                tempo_treinamento_segundos=0.0
             )
-        
-        # Treinar modelo
-        resultado = await trainer.train_model(
-            db_manager=db,
-            municipios=request.municipios,
-            test_size=request.test_size,
-            random_state=request.random_state
-        )
-        
-        return TreinamentoResponse(
-            status="sucesso",
-            modelo_versao=resultado['modelo_versao'],
-            metricas=resultado['metricas'],
-            tempo_treinamento_segundos=resultado['tempo_treinamento'],
-            registros_treinamento=resultado['registros_treinamento'],
-            registros_teste=resultado['registros_teste']
-        )
+        else:
+            return TreinamentoResponse(
+                status="erro",
+                message="Modelo não encontrado. Execute o treinamento no módulo ML primeiro.",
+                modelo_versao="none",
+                tempo_treinamento_segundos=0.0
+            )
         
     except HTTPException:
         raise
