@@ -6,23 +6,25 @@ import { AlertTriangle, TrendingUp, Shield } from 'lucide-react'
 
 interface Prediction {
   municipio: string
-  municipio_id: number
-  ano_semana: string
+  ano_semana_prevista: string
   classe_risco: string
   score_risco: number
   probabilidade_baixo: number
   probabilidade_medio: number
   probabilidade_alto: number
   modelo_versao: string
+  modelo_tipo: string
   created_at: string
 }
 
 interface Municipality {
   id: number
   nome: string
+  cod_ibge_local: string
   latitude: number
   longitude: number
   populacao: number
+  area_km2: number
 }
 
 interface MapProps {
@@ -155,7 +157,7 @@ export default function Map({ predictions, municipalities }: MapProps) {
                   <div className="mt-2 pt-2 border-t border-gray-200">
                     <div className="flex justify-between">
                       <span>Semana:</span>
-                      <span className="font-medium">{prediction.ano_semana}</span>
+                      <span className="font-medium">{prediction.ano_semana_prevista}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Modelo:</span>

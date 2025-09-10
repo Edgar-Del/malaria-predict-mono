@@ -28,6 +28,9 @@ class DatabaseManager:
         try:
             self.engine = create_engine(self.database_url)
             self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            # Testar conexão
+            with self.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
         except Exception as e:
             logger.warning(f"Erro ao conectar com banco: {e} - usando modo simulado")
             self.engine = None
@@ -119,6 +122,39 @@ class DatabaseManager:
             Lista de dicionários com dados dos municípios
         """
         try:
+            if self.engine is None:
+                # Modo simulado - retornar dados de exemplo
+                logger.info("Usando dados simulados para municípios")
+                return [
+                    {
+                        'id': 1,
+                        'nome': 'Kuito',
+                        'cod_ibge_local': 'BIE001',
+                        'latitude': -12.3833,
+                        'longitude': 16.9333,
+                        'populacao': 500000,
+                        'area_km2': 2500.0
+                    },
+                    {
+                        'id': 2,
+                        'nome': 'Andulo',
+                        'cod_ibge_local': 'BIE002',
+                        'latitude': -11.4833,
+                        'longitude': 16.4167,
+                        'populacao': 200000,
+                        'area_km2': 1800.0
+                    },
+                    {
+                        'id': 3,
+                        'nome': 'Camacupa',
+                        'cod_ibge_local': 'BIE003',
+                        'latitude': -12.0167,
+                        'longitude': 17.4833,
+                        'populacao': 150000,
+                        'area_km2': 1200.0
+                    }
+                ]
+            
             with self.engine.connect() as conn:
                 result = conn.execute(text("""
                     SELECT id, nome, cod_ibge_local, latitude, longitude, 
@@ -146,18 +182,66 @@ class DatabaseManager:
             return []
     
     def get_series_semanais(self, municipio_id: Optional[int] = None, 
+                           municipio_nome: Optional[str] = None,
                            limit: Optional[int] = None) -> pd.DataFrame:
         """
         Obtém dados de séries semanais.
         
         Args:
             municipio_id: ID do município (opcional)
+            municipio_nome: Nome do município (opcional)
             limit: Limite de registros (opcional)
             
         Returns:
             DataFrame com dados das séries semanais
         """
         try:
+            if self.engine is None:
+                # Modo simulado - retornar dados de exemplo
+                logger.info("Usando dados simulados para séries semanais")
+                import numpy as np
+                
+                # Dados simulados para os últimos 12 meses
+                data = []
+                municipios = self.get_municipios()
+                
+                for municipio in municipios:
+                    if municipio_nome and municipio['nome'].lower() != municipio_nome.lower():
+                        continue
+                    if municipio_id and municipio['id'] != municipio_id:
+                        continue
+                        
+                    # Gerar dados para 52 semanas
+                    for week in range(1, 53):
+                        # Simular padrão sazonal
+                        seasonal_factor = 1 + 0.3 * np.sin(2 * np.pi * week / 52)
+                        base_cases = 10 + np.random.poisson(5)
+                        casos = int(base_cases * seasonal_factor)
+                        
+                        data.append({
+                            'municipio_id': municipio['id'],
+                            'municipio_nome': municipio['nome'],
+                            'ano_semana': f'2024-{week:02d}',
+                            'casos': casos,
+                            'chuva_mm': np.random.uniform(0, 50),
+                            'temp_media_c': np.random.uniform(20, 30),
+                            'temp_min_c': np.random.uniform(15, 25),
+                            'temp_max_c': np.random.uniform(25, 35),
+                            'umidade_relativa': np.random.uniform(40, 90),
+                            'casos_lag1': max(0, casos - np.random.randint(0, 3)),
+                            'casos_lag2': max(0, casos - np.random.randint(0, 5)),
+                            'casos_lag3': max(0, casos - np.random.randint(0, 7)),
+                            'casos_lag4': max(0, casos - np.random.randint(0, 9)),
+                            'casos_media_2s': casos * 0.9,
+                            'casos_media_4s': casos * 0.8
+                        })
+                
+                df = pd.DataFrame(data)
+                if limit:
+                    df = df.head(limit)
+                logger.info(f"Séries semanais simuladas: {len(df)} registros")
+                return df
+            
             query = """
                 SELECT s.*, m.nome as municipio_nome
                 FROM series_semanais s

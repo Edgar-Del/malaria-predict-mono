@@ -1,40 +1,52 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { AlertTriangle, MapPin, TrendingUp, Activity, Users, Shield } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { apiClient, getNextWeek, formatWeek } from '@/lib/api'
 
 // Importar componentes dinamicamente para evitar problemas de SSR
 const Map = dynamic(() => import('@/components/Map'), { ssr: false })
 
 interface Prediction {
   municipio: string
-  municipio_id: number
-  ano_semana: string
+  ano_semana_prevista: string
   classe_risco: string
   score_risco: number
   probabilidade_baixo: number
   probabilidade_medio: number
   probabilidade_alto: number
   modelo_versao: string
+  modelo_tipo: string
   created_at: string
 }
 
 interface Municipality {
   id: number
   nome: string
+  cod_ibge_local: string
   latitude: number
   longitude: number
   populacao: number
+  area_km2: number
 }
 
 interface TimeSeries {
+  municipio: string
   ano_semana: string
   casos: number
   chuva_mm: number | null
   temp_media_c: number | null
+  temp_min_c: number | null
+  temp_max_c: number | null
+  umidade_relativa: number | null
+  casos_lag1: number | null
+  casos_lag2: number | null
+  casos_lag3: number | null
+  casos_lag4: number | null
+  casos_media_2s: number | null
+  casos_media_4s: number | null
 }
 
 export default function Dashboard() {
@@ -45,44 +57,34 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Obter próxima semana
-  const getNextWeek = () => {
-    const nextWeek = new Date()
-    nextWeek.setDate(nextWeek.getDate() + 7)
-    const year = nextWeek.getFullYear()
-    const week = Math.ceil((nextWeek.getTime() - new Date(year, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))
-    return `${year}-${week.toString().padStart(2, '0')}`
-  }
 
   // Carregar dados
   useEffect(() => {
     const loadData = async () => {
-    try {
-      setLoading(true)
-      
-      // Carregar municípios
-        const municipalitiesResponse = await fetch('/api/municipios')
-        const municipalitiesData = await municipalitiesResponse.json()
-        setMunicipalities(municipalitiesData.municipios)
+      try {
+        setLoading(true)
+        
+        // Carregar municípios
+        const municipalitiesData = await apiClient.getMunicipalities()
+        setMunicipalities(municipalitiesData)
         
         // Carregar previsões da próxima semana
         const nextWeek = getNextWeek()
-        const predictionsResponse = await fetch(`/api/previsoes/semana/${nextWeek}`)
-        const predictionsData = await predictionsResponse.json()
+        const predictionsData = await apiClient.getWeeklyPredictions(nextWeek)
         setPredictions(predictionsData.previsoes)
         
         // Selecionar primeiro município por padrão
-        if (municipalitiesData.municipios.length > 0) {
-          setSelectedMunicipality(municipalitiesData.municipios[0].nome)
-      }
-      
-    } catch (err) {
+        if (municipalitiesData.length > 0) {
+          setSelectedMunicipality(municipalitiesData[0].nome)
+        }
+        
+      } catch (err) {
         setError('Erro ao carregar dados')
-      console.error('Erro:', err)
-    } finally {
-      setLoading(false)
+        console.error('Erro:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
     loadData()
   }, [])
@@ -92,9 +94,8 @@ export default function Dashboard() {
     if (selectedMunicipality) {
       const loadTimeSeries = async () => {
         try {
-          const response = await fetch(`/api/series/${selectedMunicipality}?limit=52`)
-          const data = await response.json()
-          setTimeSeries(data.series)
+          const data = await apiClient.getMunicipalitySeries(selectedMunicipality, 52)
+          setTimeSeries(data)
         } catch (err) {
           console.error('Erro ao carregar série temporal:', err)
         }
@@ -269,8 +270,8 @@ export default function Dashboard() {
               </tr>
             </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {predictions.map((prediction) => (
-                    <tr key={prediction.municipio_id} className="hover:bg-gray-50">
+                  {predictions.map((prediction, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {prediction.municipio}
                       </td>
